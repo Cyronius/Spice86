@@ -68,7 +68,7 @@
         27
       ],
       "asm": [
-        "9AE90000D0|call far D000:00E9"
+        "9AFB0000D0|call far D000:00FB"
       ]
     },
     {
@@ -219,9 +219,9 @@
     },
     {
       "id": 25,
-      "entry": "D000:00E9",
+      "entry": "D000:00FB",
       "dead": true,
-      "term": "D000:00E9",
+      "term": "D000:00FB",
       "pred": [
         24
       ],
@@ -379,9 +379,9 @@
     },
     {
       "id": 29,
-      "entry": "D000:00ED",
+      "entry": "D000:00FF",
       "dead": true,
-      "term": "D000:00ED",
+      "term": "D000:00FF",
       "pred": [
         25
       ],
@@ -390,7 +390,7 @@
         35
       ],
       "asm": [
-        "9AE80000D0|call far D000:00E8"
+        "9AFA0000D0|call far D000:00FA"
       ]
     },
     {
@@ -492,9 +492,9 @@
     },
     {
       "id": 33,
-      "entry": "D000:00E8",
+      "entry": "D000:00FA",
       "dead": true,
-      "term": "D000:00E8",
+      "term": "D000:00FA",
       "pred": [
         29
       ],
@@ -505,9 +505,9 @@
     },
     {
       "id": 35,
-      "entry": "D000:00F2",
+      "entry": "D000:0104",
       "dead": true,
-      "term": "D000:00F2",
+      "term": "D000:0104",
       "pred": [
         29
       ],
@@ -534,9 +534,9 @@
     },
     {
       "id": 37,
-      "entry": "D000:00F6",
+      "entry": "D000:0108",
       "dead": true,
-      "term": "D000:00F6",
+      "term": "D000:0108",
       "pred": [
         35
       ],

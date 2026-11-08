@@ -189,7 +189,7 @@
       "entries": [
         {
           "block": 33,
-          "address": "D000:00E8",
+          "address": "D000:00FA",
           "kind": "functionEntry"
         }
       ]
@@ -207,7 +207,7 @@
       "entries": [
         {
           "block": 25,
-          "address": "D000:00E9",
+          "address": "D000:00FB",
           "kind": "functionEntry"
         }
       ]
@@ -257,7 +257,7 @@
       "fromBlock": 24,
       "toBlock": 25,
       "from": "D000:0063",
-      "target": "D000:00E9",
+      "target": "D000:00FB",
       "callContinuationBlock": 27,
       "callContinuationAddress": "D000:0068"
     },
@@ -267,10 +267,10 @@
       "toPartition": 12,
       "fromBlock": 29,
       "toBlock": 33,
-      "from": "D000:00ED",
-      "target": "D000:00E8",
+      "from": "D000:00FF",
+      "target": "D000:00FA",
       "callContinuationBlock": 35,
-      "callContinuationAddress": "D000:00F2"
+      "callContinuationAddress": "D000:0104"
     },
     {
       "kind": "callOut",

@@ -193,7 +193,7 @@
       "entries": [
         {
           "block": 68,
-          "address": "F000:00CA",
+          "address": "F000:00DC",
           "kind": "functionEntry"
         }
       ]
@@ -208,7 +208,7 @@
       "entries": [
         {
           "block": 33,
-          "address": "F000:00E8",
+          "address": "F000:00FA",
           "kind": "functionEntry"
         }
       ]
@@ -226,7 +226,7 @@
       "entries": [
         {
           "block": 25,
-          "address": "F000:00E9",
+          "address": "F000:00FB",
           "kind": "functionEntry"
         }
       ]
@@ -240,7 +240,7 @@
       "fromBlock": 64,
       "toBlock": 68,
       "from": "016E:0103",
-      "target": "F000:00CA",
+      "target": "F000:00DC",
       "callContinuationBlock": 73,
       "callContinuationAddress": "016E:0105"
     },
@@ -251,7 +251,7 @@
       "fromBlock": 24,
       "toBlock": 25,
       "from": "F000:0063",
-      "target": "F000:00E9",
+      "target": "F000:00FB",
       "callContinuationBlock": 27,
       "callContinuationAddress": "F000:0068"
     },
@@ -261,7 +261,7 @@
       "toPartition": 1,
       "fromBlock": 69,
       "toBlock": 73,
-      "from": "F000:00CE",
+      "from": "F000:00E0",
       "target": "016E:0105"
     },
     {
@@ -270,10 +270,10 @@
       "toPartition": 13,
       "fromBlock": 29,
       "toBlock": 33,
-      "from": "F000:00ED",
-      "target": "F000:00E8",
+      "from": "F000:00FF",
+      "target": "F000:00FA",
       "callContinuationBlock": 35,
-      "callContinuationAddress": "F000:00F2"
+      "callContinuationAddress": "F000:0104"
     }
   ]
 }

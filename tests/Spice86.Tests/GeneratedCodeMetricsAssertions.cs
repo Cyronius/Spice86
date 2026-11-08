@@ -25,7 +25,7 @@ internal static class GeneratedCodeMetricsAssertions {
         ["flagconditions"] = (0, 6, 20, 15, 138, 108),
         ["data_globals.spec"] = (0, 3, 0, 0, 0, 1),
         ["data_tables.spec"] = (0, 3, 1, 0, 2, 3),
-        ["data_strings.ivt.spec"] = (0, 15, 6, 0, 4, 0),
+        ["data_strings.ivt.spec"] = (0, 15, 8, 0, 4, 0),
         ["data_segments.spec"] = (0, 1, 1, 0, 3, 0),
         ["data_jump_tables.spec"] = (6, 7, 4, 0, 58, 64)
     };

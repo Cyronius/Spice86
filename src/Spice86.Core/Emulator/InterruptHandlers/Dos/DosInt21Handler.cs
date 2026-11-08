@@ -58,6 +58,7 @@ public class DosInt21Handler : InterruptHandler {
     private const ushort DefaultTotalClusters = 0x7FFD;
     private const ushort MaximumJobFileTableSize = 0xFF;
     private const ushort PspJobFileTableOffset = 0x18;
+    private const byte ClearInputBufferAndReadFunction = 0x0C;
     private const byte SetCurrentPspFunction = 0x50;
     private const byte GetCurrentPspFunction = 0x51;
     private const byte GetPspAddressFunction = 0x62;
@@ -123,12 +124,15 @@ public class DosInt21Handler : InterruptHandler {
     ///     Emits an INT 21h handler stub into guest RAM that dispatches all AH values to the
     ///     C# handler via <c>callback(Run)</c>. For AH=07h, 08h, and 0Ah the stub first
     ///     polls STDIN readiness with INT 28h idle calls before dispatching.
+    ///     For AH=0Ch the stub flushes the input first, then runs the input function in AL the same
+    ///     way, so AL=01h, 07h, 08h and 0Ah wait for a key typed after the flush.
     ///     AH=01h is NOT polled here — it goes through L_DEFAULT to the C# handler which
     ///     reads via ConsoleDevice → INT 16h (which waits with interrupts enabled for IRQ 1).
     /// </summary>
     /// <remarks><![CDATA[
     ///     A flag byte is reserved in the handler segment, before the entry point.
     ///     The CheckStdinReady callback writes to this byte (1 = ready, 0 = not ready).
+    ///     The FlushInput callback writes to it too (1 = the function in AL waits for input).
     ///     ASM reads it with CMP byte CS:[flagOffset], 0 — no CPU state is modified by the
     ///     readiness callback.
     ///
@@ -143,9 +147,17 @@ public class DosInt21Handler : InterruptHandler {
     ///       JZ  L_WAIT_FOR_STDIN
     ///       CMP AH, 0Ah
     ///       JZ  L_WAIT_FOR_STDIN
+    ///       CMP AH, 0Ch
+    ///       JZ  L_FLUSH_INPUT
     ///
     ///     L_DEFAULT:
     ///       callback(Run)                    ; dispatch to C# for all AH values
+    ///       IRET
+    ///
+    ///     L_FLUSH_INPUT:
+    ///       callback(FlushInput)             ; flushes input, runs AL=06h, writes flag byte
+    ///       CMP byte CS:[stdin_ready_flag], 0
+    ///       JNZ L_WAIT_FOR_STDIN             ; the function in AL waits for input
     ///       IRET
     ///
     ///     L_WAIT_FOR_STDIN:
@@ -156,7 +168,7 @@ public class DosInt21Handler : InterruptHandler {
     ///       JMP short L_WAIT_FOR_STDIN
     ///
     ///     L_DISPATCH:
-    ///       callback(Run)                    ; dispatch to C# handler for this AH value
+    ///       callback(DispatchStdinInput)     ; runs AH, or for AH=0Ch the input function in AL
     ///       IRET
     /// ]]></remarks>
     public override SegmentedAddress WriteAssemblyInRam(MemoryAsmWriter memoryAsmWriter) {
@@ -169,28 +181,41 @@ public class DosInt21Handler : InterruptHandler {
 
         // Block sizes for jump offset calculation:
         // L_DEFAULT:          callback(4) + IRET(1) = 5 bytes
+        // L_FLUSH_INPUT:      callback(4) + CMP(6) + JNZ(2) + IRET(1) = 13 bytes
         // L_WAIT_FOR_STDIN:   STI(1) + callback(4) + CMP(6) + JNZ(2) + INT(2) + JMP(2) = 17 bytes
         // L_DISPATCH:         callback(4) + IRET(1) = 5 bytes
 
         SegmentedAddress handlerAddress = memoryAsmWriter.CurrentAddress;
 
-        // CMP AH, 07h → JZ L_WAIT_FOR_STDIN
+        // CMP AH, 07h -> JZ L_WAIT_FOR_STDIN
         memoryAsmWriter.WriteCmpAh(0x07);
-        // skip: CMP 08h(5) + CMP 0Ah(5) + L_DEFAULT(5) = 15
-        memoryAsmWriter.WriteJz(15);
+        // skip: CMP 08h(5) + CMP 0Ah(5) + CMP 0Ch(5) + L_DEFAULT(5) + L_FLUSH_INPUT(13) = 33
+        memoryAsmWriter.WriteJz(33);
 
-        // CMP AH, 08h → JZ L_WAIT_FOR_STDIN
+        // CMP AH, 08h -> JZ L_WAIT_FOR_STDIN
         memoryAsmWriter.WriteCmpAh(0x08);
-        // skip: CMP 0Ah(5) + L_DEFAULT(5) = 10
-        memoryAsmWriter.WriteJz(10);
+        // skip: CMP 0Ah(5) + CMP 0Ch(5) + L_DEFAULT(5) + L_FLUSH_INPUT(13) = 28
+        memoryAsmWriter.WriteJz(28);
 
-        // CMP AH, 0Ah → JZ L_WAIT_FOR_STDIN
+        // CMP AH, 0Ah -> JZ L_WAIT_FOR_STDIN
         memoryAsmWriter.WriteCmpAh(0x0A);
+        // skip: CMP 0Ch(5) + L_DEFAULT(5) + L_FLUSH_INPUT(13) = 23
+        memoryAsmWriter.WriteJz(23);
+
+        // CMP AH, 0Ch -> JZ L_FLUSH_INPUT
+        memoryAsmWriter.WriteCmpAh(ClearInputBufferAndReadFunction);
         // skip: L_DEFAULT(5) = 5
         memoryAsmWriter.WriteJz(5);
 
         // L_DEFAULT: callback to C# Run() then IRET
         memoryAsmWriter.RegisterAndWriteCallback(VectorNumber, Run);
+        memoryAsmWriter.WriteIret();
+
+        // L_FLUSH_INPUT: flush, then wait for STDIN only when the function in AL reads input
+        memoryAsmWriter.RegisterAndWriteCallback(CallbackNumbers.DosInt21FlushInput, CallbackFlushInput);
+        WriteCompareFlagByteWithZero(memoryAsmWriter, flagOffset);
+        // JNZ L_WAIT_FOR_STDIN: skip IRET(1)
+        memoryAsmWriter.WriteJnz(1);
         memoryAsmWriter.WriteIret();
 
         // L_WAIT_FOR_STDIN: poll STDIN readiness in a loop with INT 28h idle
@@ -201,12 +226,7 @@ public class DosInt21Handler : InterruptHandler {
         memoryAsmWriter.WriteSti();
         // callback(CheckStdinReady) — writes flag byte, 4 bytes
         memoryAsmWriter.RegisterAndWriteCallback(CallbackNumbers.DosInt21CheckStdinReady, CallbackCheckStdinReady);
-        // CMP byte CS:[flagOffset], 0 — 6 bytes
-        memoryAsmWriter.WriteUInt8(0x2E); // CS: segment override
-        memoryAsmWriter.WriteUInt8(0x80); // CMP Eb, Ib
-        memoryAsmWriter.WriteUInt8(0x3E); // ModR/M: [disp16], /7 (CMP)
-        memoryAsmWriter.WriteUInt16(flagOffset);
-        memoryAsmWriter.WriteUInt8(0x00); // imm8 = 0
+        WriteCompareFlagByteWithZero(memoryAsmWriter, flagOffset);
         // JNZ L_DISPATCH — skip INT 28h(2) + JMP(2) = 4
         memoryAsmWriter.WriteJnz(4);
         // INT 28h (DOS idle)
@@ -214,20 +234,57 @@ public class DosInt21Handler : InterruptHandler {
         // JMP short back to STI: -(4+6+2+2+2+1) = -17
         memoryAsmWriter.WriteJumpShort(-17);
 
-        // L_DISPATCH: dispatch to C# handler for AH=07h/08h/0Ah
-        memoryAsmWriter.RegisterAndWriteCallback(CallbackNumbers.DosInt21StdinInputDispatch, Run);
+        // L_DISPATCH: dispatch to C# handler for AH=07h/08h/0Ah, or for AH=0Ch the function in AL
+        memoryAsmWriter.RegisterAndWriteCallback(CallbackNumbers.DosInt21StdinInputDispatch, DispatchStdinInput);
         memoryAsmWriter.WriteIret();
 
         return handlerAddress;
     }
 
+    /// <summary>Writes <c>CMP byte CS:[flagOffset], 0</c> (6 bytes).</summary>
+    private static void WriteCompareFlagByteWithZero(MemoryAsmWriter memoryAsmWriter, ushort flagOffset) {
+        memoryAsmWriter.WriteUInt8(0x2E); // CS: segment override
+        memoryAsmWriter.WriteUInt8(0x80); // CMP Eb, Ib
+        memoryAsmWriter.WriteUInt8(0x3E); // ModR/M: [disp16], /7 (CMP)
+        memoryAsmWriter.WriteUInt16(flagOffset);
+        memoryAsmWriter.WriteUInt8(0x00); // imm8 = 0
+    }
+
     /// <summary>
     /// Writes 1 to the handler's flag byte if stdin has data, 0 if empty.
     /// No CPU registers or flags are modified.
-    /// Used by the ASM wait loop for AH=07h/08h/0Ah.
+    /// Used by the ASM wait loop for AH=07h/08h/0Ah, and AH=0Ch when AL is 01h, 07h, 08h or 0Ah.
     /// </summary>
     public void CallbackCheckStdinReady() {
         Memory[_stdinReadyFlagLinearAddress] = IsStandardInputAvailable() ? (byte)1 : (byte)0;
+    }
+
+    /// <summary>
+    /// First step of INT 21h AH=0Ch in the ASM stub: flushes the input buffers. When the function in AL
+    /// waits for input (01h, 07h, 08h or 0Ah), writes 1 to the handler's flag byte so the stub waits for
+    /// STDIN before <see cref="DispatchStdinInput"/> runs it. Otherwise runs that function now (06h, or
+    /// nothing for any other AL) and writes 0, so the stub returns.
+    /// </summary>
+    public void CallbackFlushInput() {
+        SaveCallerStackInCurrentPsp(ClearInputBufferAndReadFunction);
+        FlushInput();
+        bool waitsForInput = FlushFollowUpWaitsForInput(State.AL);
+        if (!waitsForInput) {
+            RunFlushFollowUp();
+        }
+        Memory[_stdinReadyFlagLinearAddress] = waitsForInput ? (byte)1 : (byte)0;
+    }
+
+    /// <summary>
+    /// Last step of the ASM stub for the input functions, once STDIN is ready: runs the function in AH, or
+    /// for AH=0Ch, whose flush already ran, the input function in AL.
+    /// </summary>
+    public void DispatchStdinInput() {
+        if (State.AH == ClearInputBufferAndReadFunction) {
+            RunFlushFollowUp();
+            return;
+        }
+        Run();
     }
 
     /// <summary>
@@ -763,19 +820,35 @@ public class DosInt21Handler : InterruptHandler {
     /// Clears the keyboard buffer, then calls the INT21H input function whose number is in AL.
     /// DOS only runs functions 01h, 06h, 07h, 08h and 0Ah here; any other AL, 00h included, only flushes.
     /// </summary>
-    [InterruptService(0x0C, Unknown = true)]
+    /// <remarks>
+    /// The ASM stub does not call this method: it flushes with <see cref="CallbackFlushInput"/>, waits for
+    /// STDIN when the function in AL reads input, then runs it with <see cref="DispatchStdinInput"/>.
+    /// </remarks>
+    [InterruptService(ClearInputBufferAndReadFunction, Unknown = true)]
     public void ClearKeyboardBufferAndInvokeKeyboardFunction() {
-        byte operation = State.AL;
+        FlushInput();
+        RunFlushFollowUp();
+    }
+
+    private void FlushInput() {
         if (LoggerService.IsEnabled(LogLevel.Debug)) {
-            LoggerService.LogDebug("CLEAR KEYBOARD AND CALL INT 21 {Operation}", operation);
+            LoggerService.LogDebug("CLEAR KEYBOARD AND CALL INT 21 {Operation}", State.AL);
         }
         _keyboardInt16Handler.FlushKeyboardBuffer();
         // NANSI dosfn7: also clears all device-level stuffahead buffers.
         GetStandardFile(DosStandardHandle.Stdin)?.Flush();
+    }
+
+    private void RunFlushFollowUp() {
+        byte operation = State.AL;
         if (operation is not 0x1 and not 0x6 and not 0x7 and not 0x8 and not 0xA) {
             return;
         }
         Run(operation);
+    }
+
+    private static bool FlushFollowUpWaitsForInput(byte operation) {
+        return operation is 0x1 or 0x7 or 0x8 or 0xA;
     }
 
     /// <summary>

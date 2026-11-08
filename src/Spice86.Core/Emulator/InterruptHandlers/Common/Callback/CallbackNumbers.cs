@@ -40,7 +40,7 @@ public static class CallbackNumbers {
     /// <summary>Callback of <c>DosInt21Handler.CallbackCheckStdinReady</c>.</summary>
     public const ushort DosInt21CheckStdinReady = 0x10A;
 
-    /// <summary>Callback of <c>DosInt21Handler.Run</c> for the stdin input dispatch.</summary>
+    /// <summary>Callback of <c>DosInt21Handler.DispatchStdinInput</c>.</summary>
     public const ushort DosInt21StdinInputDispatch = 0x10B;
 
     /// <summary>Callback of <c>MouseDriver.BeforeUserHandlerExecution</c>.</summary>
@@ -48,6 +48,9 @@ public static class CallbackNumbers {
 
     /// <summary>Callback of <c>MouseDriver.AfterUserHandlerExecution</c>.</summary>
     public const ushort MouseAfterUserHandler = 0x10D;
+
+    /// <summary>Callback of <c>DosInt21Handler.CallbackFlushInput</c>.</summary>
+    public const ushort DosInt21FlushInput = 0x10E;
 
     /// <summary>Returns the callback number of the default handler of <paramref name="irq"/>.</summary>
     /// <param name="irq">IRQ line serviced by a default handler.</param>

@@ -14,7 +14,7 @@ D000:0017 callback 9
 D000:001B iret
 D000:005D callback 0x0070
 D000:0061 iret
-D000:0063 call far D000:00E9
+D000:0063 call far D000:00FB
 D000:0068 callback 0x0074
 D000:006C iret
 D000:006D callback 0x0104
@@ -29,11 +29,11 @@ D000:0081 callback 0x0108
 D000:0085 iret
 D000:0086 callback 0x0109
 D000:008A iret
-D000:00E8 ret far
-D000:00E9 callback 0x010C
-D000:00ED call far D000:00E8
-D000:00F2 callback 0x010D
-D000:00F6 ret far
+D000:00FA ret far
+D000:00FB callback 0x010C
+D000:00FF call far D000:00FA
+D000:0104 callback 0x010D
+D000:0108 ret far
 F000:4000 cli
 F000:4001 mov AX,0x1000
 F000:4004 mov SS,AX

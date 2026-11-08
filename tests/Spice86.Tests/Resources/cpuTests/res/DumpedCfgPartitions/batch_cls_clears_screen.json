@@ -187,7 +187,11 @@
         84,
         92,
         101,
-        105,
+        108,
+        112,
+        106,
+        110,
+        116,
         82,
         86,
         89,
@@ -213,7 +217,7 @@
       "entries": [
         {
           "block": 33,
-          "address": "F000:00E8",
+          "address": "F000:00FA",
           "kind": "functionEntry"
         }
       ]
@@ -231,7 +235,7 @@
       "entries": [
         {
           "block": 25,
-          "address": "F000:00E9",
+          "address": "F000:00FB",
           "kind": "functionEntry"
         }
       ]
@@ -254,7 +258,7 @@
       "fromBlock": 24,
       "toBlock": 25,
       "from": "F000:0063",
-      "target": "F000:00E9",
+      "target": "F000:00FB",
       "callContinuationBlock": 27,
       "callContinuationAddress": "F000:0068"
     },
@@ -262,9 +266,9 @@
       "kind": "cyclicCrossPartitionFlow",
       "fromPartition": 12,
       "toPartition": 1,
-      "fromBlock": 101,
+      "fromBlock": 108,
       "toBlock": 64,
-      "from": "F000:00A5",
+      "from": "F000:00AA",
       "target": "016D:0100"
     },
     {
@@ -273,10 +277,10 @@
       "toPartition": 13,
       "fromBlock": 29,
       "toBlock": 33,
-      "from": "F000:00ED",
-      "target": "F000:00E8",
+      "from": "F000:00FF",
+      "target": "F000:00FA",
       "callContinuationBlock": 35,
-      "callContinuationAddress": "F000:00F2"
+      "callContinuationAddress": "F000:0104"
     }
   ]
 }

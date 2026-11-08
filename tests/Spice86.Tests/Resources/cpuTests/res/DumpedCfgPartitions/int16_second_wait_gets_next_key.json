@@ -233,7 +233,11 @@
         210,
         218,
         227,
-        231,
+        234,
+        238,
+        232,
+        236,
+        242,
         208,
         212,
         215,
@@ -259,7 +263,7 @@
       "entries": [
         {
           "block": 33,
-          "address": "F000:00E8",
+          "address": "F000:00FA",
           "kind": "functionEntry"
         }
       ]
@@ -277,7 +281,7 @@
       "entries": [
         {
           "block": 25,
-          "address": "F000:00E9",
+          "address": "F000:00FB",
           "kind": "functionEntry"
         }
       ]
@@ -360,7 +364,7 @@
       "fromBlock": 24,
       "toBlock": 25,
       "from": "F000:0063",
-      "target": "F000:00E9",
+      "target": "F000:00FB",
       "callContinuationBlock": 27,
       "callContinuationAddress": "F000:0068"
     },
@@ -370,10 +374,10 @@
       "toPartition": 15,
       "fromBlock": 29,
       "toBlock": 33,
-      "from": "F000:00ED",
-      "target": "F000:00E8",
+      "from": "F000:00FF",
+      "target": "F000:00FA",
       "callContinuationBlock": 35,
-      "callContinuationAddress": "F000:00F2"
+      "callContinuationAddress": "F000:0104"
     }
   ]
 }

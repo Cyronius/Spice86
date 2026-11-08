@@ -94,7 +94,7 @@ F000:0017 callback 9
 F000:001B iret
 F000:005D callback 0x0070
 F000:0061 iret
-F000:0063 call far F000:00E9
+F000:0063 call far F000:00FB
 F000:0068 callback 0x0074
 F000:006C iret
 F000:006D callback 0x0104
@@ -109,8 +109,8 @@ F000:0081 callback 0x0108
 F000:0085 iret
 F000:0086 callback 0x0109
 F000:008A iret
-F000:00E8 ret far
-F000:00E9 callback 0x010C
-F000:00ED call far F000:00E8
-F000:00F2 callback 0x010D
-F000:00F6 ret far
+F000:00FA ret far
+F000:00FB callback 0x010C
+F000:00FF call far F000:00FA
+F000:0104 callback 0x010D
+F000:0108 ret far

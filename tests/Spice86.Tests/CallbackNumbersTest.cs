@@ -66,10 +66,11 @@ public class CallbackNumbersTest {
             [CallbackNumbers.DefaultIrq7] = new SegmentedAddress(0xF000, 0x007C),
             [CallbackNumbers.DefaultIrq10] = new SegmentedAddress(0xF000, 0x0081),
             [CallbackNumbers.DefaultIrq11] = new SegmentedAddress(0xF000, 0x0086),
-            [CallbackNumbers.DosInt21CheckStdinReady] = new SegmentedAddress(0xF000, 0x00AB),
-            [CallbackNumbers.DosInt21StdinInputDispatch] = new SegmentedAddress(0xF000, 0x00BB),
-            [CallbackNumbers.MouseBeforeUserHandler] = new SegmentedAddress(0xF000, 0x00E9),
-            [CallbackNumbers.MouseAfterUserHandler] = new SegmentedAddress(0xF000, 0x00F2)
+            [CallbackNumbers.DosInt21FlushInput] = new SegmentedAddress(0xF000, 0x00AF),
+            [CallbackNumbers.DosInt21CheckStdinReady] = new SegmentedAddress(0xF000, 0x00BD),
+            [CallbackNumbers.DosInt21StdinInputDispatch] = new SegmentedAddress(0xF000, 0x00CD),
+            [CallbackNumbers.MouseBeforeUserHandler] = new SegmentedAddress(0xF000, 0x00FB),
+            [CallbackNumbers.MouseAfterUserHandler] = new SegmentedAddress(0xF000, 0x0104)
         };
     }
 }
